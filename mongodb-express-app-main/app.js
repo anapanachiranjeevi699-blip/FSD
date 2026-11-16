@@ -1,31 +1,32 @@
 import express from "express";
 import { MongoClient, ObjectId } from "mongodb";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
-const port = 7000;
+const port = process.env.PORT || 7000;
 
 // MongoDB connection
-const mongoUrl = "mongodb://admin:admin123@localhost:27017";
+const mongoUrl = process.env.MONGO_FULL_URI;
 const databaseName = "library_db";
 
 const client = new MongoClient(mongoUrl);
 
 let db;
-await client
-  .connect()
-  .then(() => {
-    db = client.db(databaseName);
-    console.log("Connected to MongoDB");
-  })
-  .catch((err) => {
-    console.error("Failed to connect to MongoDB", err);
-    process.exit(1);
-  });
+
+try {
+  await client.connect();
+  db = client.db(databaseName);
+  console.log("Connected to MongoDB Atlas");
+} catch (err) {
+  console.error("Failed to connect to MongoDB", err);
+  process.exit(1);
+}
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 //CRUD API endpoints
 // Create a new book - POST /api/v1/books
 app.post("/api/v1/books", (req, res) => {
